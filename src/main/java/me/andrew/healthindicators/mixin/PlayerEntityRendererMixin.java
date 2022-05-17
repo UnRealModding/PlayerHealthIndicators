@@ -2,8 +2,10 @@ package me.andrew.healthindicators.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.andrew.healthindicators.HealthIndicatorsMod;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
@@ -12,6 +14,7 @@ import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,7 +31,8 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
             at = @At("RETURN")
     )
     public void renderHealth(AbstractClientPlayerEntity abstractClientPlayerEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
-        if (HealthIndicatorsMod.toggled && !abstractClientPlayerEntity.isMainPlayer()) {
+        PlayerListEntry self = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid());
+        if (self != null && !abstractClientPlayerEntity.isSpectator() && !abstractClientPlayerEntity.isCreative() && self.getGameMode() == GameMode.SPECTATOR && HealthIndicatorsMod.toggled && !abstractClientPlayerEntity.isMainPlayer()) {
             matrixStack.push();
 
             double d = this.dispatcher.getSquaredDistanceToCamera(abstractClientPlayerEntity);
